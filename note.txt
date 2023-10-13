@@ -1,0 +1,6 @@
+{
+    "userName":"test@yahoo.com",
+    "password":"Test@test123",
+    "confirmPassword":"Test@test123"
+}
+
