@@ -10,6 +10,4 @@ dataBase.connect((err) => {
     if (!err) console.log("DataBase is connected")
     else console.log(err)
 })
-
-
 module.exports = dataBase

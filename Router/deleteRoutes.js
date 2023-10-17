@@ -4,6 +4,6 @@ const deleteController = require("../Controllers/prodCat")
 const Authentication = require("../middleware/authorization")
 
 deleterouter.put("/single/prod/cat/:id", deleteController.ProdCateDelByID)
-deleterouter.put("/multiple/prod/cat",deleteController.delMultipleCateById)
+deleterouter.post("/multiple/prod/cat",deleteController.deleteMultipleCateById)
 
 module.exports = deleterouter

@@ -1,4 +1,6 @@
 const dataBase = require("../Config/dataBase")
+
+
 exports.Prodcate = async (req, res) => {
     let prodCatName = req.body.prodCatName;
     let prodCatParent = req.body.prodCatParent;
@@ -43,26 +45,26 @@ exports.UpdateProdCateById = async (req, res) => {
 };
 exports.singleProdCateById = async (req, res) => {
     const id = req.params.id;
-    const sqlQuery = `SELECT prodcat_id,prodcat_name,prodcat_parent,prodcat_is_featured,prodcat_active AS prodcat_Status FROM  tbl_products_categories WHERE prodcat_id = ${id}`;
+    const sqlQuery = `SELECT prodcat_id AS prodcatId,prodcat_name AS prodCatName,prodcat_parent AS prodCatParent,prodcat_is_featured AS prodCatIsFeatured,prodcat_active AS prodCatStatus FROM  tbl_products_categories WHERE prodcat_id = ${id}`;
     await dataBase.query(sqlQuery, (err, response) => {
         if (err) return res.status(400).json({ success: false, message: "Something went wrong", err });
         return res.status(200).json({ success: true, message: "Successfully fetched", response });
     })
 }
 exports.productCategoryAll = async (req, res) => {
-    const sqlQurey = `SELECT prodcat_id,prodcat_name,prodcat_active As prodcat_Status,prodcat_added_at AS RegDate FROM  tbl_products_categories WHERE prodcat_deleted = 0`;
+    const sqlQurey = `SELECT prodcat_id AS prodcatId,prodcat_name AS prodCatName,prodcat_active As prodCatStatus,prodcat_added_at AS RegDate FROM  tbl_products_categories WHERE prodcat_deleted = 0`;
     await dataBase.query(sqlQurey, (error, response) => {
         if (error) return res.status(400).json({ success: false, message: "Something Went Wrong", error });
         return res.status(200).json({ success: true, message: "ok", response });
     });
 };
-exports.delMultipleCateById = async (req, res) => {
-    const ids = req.query.id;
-    console.log(req.query.id)
+exports.deleteMultipleCateById = async (req, res) => {
+    const ids = req.body.id;
+    console.log(ids);
     return
     const sqlQuery = `UPDATE tbl_products_categories SET prodcat_deleted = 1 WHERE prodcat_id IN (?)`;
     dataBase.query(sqlQuery, [ids], (err, result) => {
-        if (err) return console.log(err)
-        console.log(result)
-    })
-}
+        if (err) return console.log(err);
+        console.log(result);
+    });
+};

@@ -5,13 +5,12 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 require('dotenv').config();
 
-
 const secrteKey = process.env.SECRTE_KEY;
 const port = process.env.PORT
-
 const app = express();
 app.use(express.json())
 // app.use(express.static("src"));
+// let corOptions = {oirign: `http://localhost:8081`}
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -31,6 +30,8 @@ app.use("/api", require("./Router/postRoutes"));
 app.use("/get", require("./Router/getRoutes"));
 app.use("/put",require("./Router/updateRoutes"))
 app.use("/del", require("./Router/deleteRoutes"));
+
+
 app.listen(port, () => {
     console.log(`Server in running on port ${port}`)
 })
