@@ -1,4 +1,4 @@
-const dataBase = require("../../Config/dataBase");
+const dataBase = require("../Config/dataBase");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken")
 
@@ -46,7 +46,6 @@ exports.signUpUser = async (req, res) => {
         else { return res.status(403).json({ success: false, message: "password does not match" }) }
     } else { return res.status(400).json({ success: false, message: "Creadentials are required" }) }
 }
-
 exports.logInUser = async (req, res) => {
     const userName = req.body.userName;
     const password = req.body.password;
@@ -66,7 +65,6 @@ exports.logInUser = async (req, res) => {
                     const username = user.admin_username;
                     const userStatus = user.admin_status
                     const userData = { userId, username, name, userStatus }
-
                     const matchpassword = await bcrypt.compare(password, adminPassword)
                     if (matchpassword) {
                         const token = await jwt.sign({ username, userId }, secrteKey, { expiresIn: "2h" })
@@ -81,4 +79,11 @@ exports.logInUser = async (req, res) => {
         else { return res.status(401).json({ success: false, message: "Invalid Username" }) }
     }
     else { return res.status(401).json({ success: false, message: "credentials are required" }) }
+}
+exports.admin = async (req, res) => {
+    const sqlQueryOne = `SELECT * FROM tbl_admin`
+    await dataBase.query(sqlQueryOne, (error, result) => {
+        if (error) return res.status(400).json({ success: false, message: "Something went wrong", error })
+        return res.status(200).json({ success: true, message: "ok", result })
+    })
 }
