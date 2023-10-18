@@ -6,15 +6,30 @@ exports.Prodcate = async (req, res) => {
     let prodCatParent = req.body.prodCatParent;
     let prodCatIsFeatured = req.body.prodCatIsFeatured;
     let prodCatActive = req.body.prodCatStatus;
-    const dataToInsert = [prodCatName, prodCatParent, prodCatIsFeatured, prodCatActive];
+    let dataToInsert = [prodCatName, prodCatParent, prodCatIsFeatured, prodCatActive];
     const sqlQuery = `INSERT INTO tbl_products_categories (prodcat_name,prodcat_parent,prodcat_is_featured,prodcat_active) VALUES (?,?,?,?)`;
+    const sqlQueryTwo = `UPDATE tbl_products_categories SET prodcat_name = ?, prodcat_parent = ?, prodcat_is_featured = ?, prodcat_active = ?, prodcat_updated_at = now() WHERE prodcat_id = ?`;
     if (!prodCatName || !prodCatParent || !prodCatIsFeatured || !prodCatActive) {
         return res.status(204).json({ success: false, message: "Content is Required" });
     };
-    await dataBase.query(sqlQuery, dataToInsert, (error, response) => {
-        if (error) return res.status(400).json({ success: false, message: "Something went wrong", error });
-        return res.status(200).json({ success: true, message: "Successfully inserted", response });
-    });
+    if (req.body.prodcatId) {
+        let id = req.body.prodcatId
+        let dataToUpdate = [prodCatName, prodCatParent, prodCatIsFeatured, prodCatActive, id];
+        console.log(dataToUpdate, "dataToUpdate");
+        // return
+        await dataBase.query(sqlQueryTwo, dataToUpdate, (err, result) => {
+            if (err) return res.status(400).json({ success: false, message: "failed", err });
+            return res.status(200).json({ success: true, message: "Updated successfully", result });
+        });
+    }
+    if (!req.body.prodcatId) {
+        console.log(dataToInsert, "dataToInsert")
+        // return
+        await dataBase.query(sqlQuery, dataToInsert, (error, response) => {
+            if (error) return res.status(400).json({ success: false, message: "Something went wrong", error });
+            return res.status(200).json({ success: true, message: "Successfully inserted", response });
+        });
+    }
 };
 exports.ProdCateDelByID = async (req, res) => {
     const id = req.params.id;
@@ -59,12 +74,24 @@ exports.productCategoryAll = async (req, res) => {
     });
 };
 exports.deleteMultipleCateById = async (req, res) => {
-    const ids = req.body.id;
+    const ids = req.body.prodcatId;
     console.log(ids);
-    return
+    // return
     const sqlQuery = `UPDATE tbl_products_categories SET prodcat_deleted = 1 WHERE prodcat_id IN (?)`;
-    dataBase.query(sqlQuery, [ids], (err, result) => {
-        if (err) return console.log(err);
-        console.log(result);
+    dataBase.query(sqlQuery, [ids], (error, result) => {
+        if (error) return res.status(400).json({ success: false, message: "Something Went Wrong", error });
+        return res.status(200).json({ success: true, message: "deleted successfully", result });
     });
 };
+exports.UpdateProdCateStatus = async (req, res) => {
+    const id = req.params.id;
+    let prodCatActive = req.body.prodCatStatus;
+    const sqlQuery = `UPDATE tbl_products_categories SET prodcat_active = ? WHERE prodcat_id = ?`;
+    const dataToUpdate = [prodCatActive, id];
+    console.log(dataToUpdate);
+    return
+    await dataBase.query(sqlQuery, dataToUpdate, (err, result) => {
+        if (err) return res.status(400).json({ success: false, message: "Something Went Wrong", err });
+        return res.status(200).json({ success: true, message: "ok", result });
+    })
+}
