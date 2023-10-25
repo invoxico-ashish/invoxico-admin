@@ -1,4 +1,5 @@
 const db = require("../models");
+const { Op } = require("sequelize");
 const ProdCate = db.prodCate;
 
 // api for both insert and update 
@@ -73,7 +74,7 @@ const getallProdCate = async (req, res) => {
 };
 const getSingleProdCateById = async (req, res) => {
     const id = req.params.id;
- 
+
     if (!id) return res.status(400).json({ success: false, message: "id is required" });
     try {
         const response = await ProdCate.findByPk(id, {
@@ -156,12 +157,15 @@ const updateMultipleActiveById = async (req, res) => {
     }
 };
 const filterCategoryByName = async (req, res) => {
-    const inputName = req.query.prodCatName;
+    const inputName = req.body.prodCatName;
     console.log(inputName);
+    return
     if (inputName) {
         try {
             const findName = inputName.split(' ');
             console.log(findName);
+            console.log("findName");
+
             const matchingNames = await ProdCate.findAll({
                 attributes: [
                     ["prodcat_id", "prodcatId"],
@@ -182,6 +186,7 @@ const filterCategoryByName = async (req, res) => {
             });
             return res.status(200).json({ success: true, message: "SuccessFull", matchingNames })
         } catch (error) {
+            console.log(error)
             return res.status(400).json({ success: false, message: "Something Went wrong", error })
         }
     }
@@ -221,6 +226,10 @@ const filterCategoryByStatus = async (req, res) => {
     }
 };
 
-module.exports = {filterCategoryByName,filterCategoryByStatus, add_Update_Prodcate, deleteProdCateById, getallProdCate, getSingleProdCateById, updateStatusSingleById, deleteMultipleCateById, updateMultipleActiveById };
+module.exports = {
+    filterCategoryByName, filterCategoryByStatus, add_Update_Prodcate,
+    deleteProdCateById, getallProdCate, getSingleProdCateById,
+    updateStatusSingleById, deleteMultipleCateById, updateMultipleActiveById
+};
 
 

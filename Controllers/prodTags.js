@@ -15,7 +15,7 @@ const addTag = async (req, res) => {
             // insert tag
             if (!prodtag_id) {
                 let dataToInsert = { prodtag_name: prodtag_name, prodtag_active: prodtag_status };
-                console.log(dataToInsert,"dataToInsert");
+                console.log(dataToInsert, "dataToInsert");
                 // return
                 const addTag = await Tag.create(dataToInsert);
                 return res.status(201).json({ success: true, message: "tag add successfully", addTag })
@@ -297,4 +297,9 @@ const filterTagByStatus = async (req, res) => {
     }
 }
 
-module.exports = {filterTagByStatus,filterCategoryByName,filterCategoryByStatus, addTag, getAllTags, getSingleTag, changeStatus, deleteSingleTag, changeStatusMultiple, deleteMultipleTags, filterTagByName };
+module.exports = {
+    filterTagByStatus, filterCategoryByName, filterCategoryByStatus,
+    addTag, getAllTags, getSingleTag,
+    changeStatus, deleteSingleTag, changeStatusMultiple,
+    deleteMultipleTags, filterTagByName
+};

@@ -6,10 +6,10 @@ const prodTags = require("../Controllers/prodTags");
 
 
 
-deleteRouter.put("/single/prod/cat/:id", prodCateController.deleteProdCateById);
 deleteRouter.post("/delete/multiple/prod/cat", prodCateController.deleteMultipleCateById);
-deleteRouter.put("/single/prod/tag/:id", prodTags.deleteSingleTag)
+deleteRouter.put("/single/prod/cat/:id", prodCateController.deleteProdCateById);
 deleteRouter.put("/delete/tag/multiple", prodTags.deleteMultipleTags)
+deleteRouter.put("/single/prod/tag/:id", prodTags.deleteSingleTag)
 
 
 module.exports = deleteRouter;
