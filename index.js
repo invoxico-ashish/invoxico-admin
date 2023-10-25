@@ -26,10 +26,10 @@ app.use(
         }, // set the session cookie properties
     })
 );
-app.use("/api", require("./Router/postRoutes"));
-app.use("/get", require("./Router/getRoutes"));
-app.use("/put",require("./Router/updateRoutes"))
-app.use("/del", require("./Router/deleteRoutes"));
+app.use("/api", require("./routes/postRoutes"));
+app.use("/get", require("./routes/getRoutes"));
+app.use("/put", require("./routes/updateRoutes"))
+app.use("/del", require("./routes/deleteRoutes"));
 
 
 app.listen(port, () => {
