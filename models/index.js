@@ -39,12 +39,17 @@ Object.keys(db).forEach(modelName => {
 });
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
+
+// model-instance
+
 db.admin = require("../models/tbl_admin")(sequelize, DataTypes);
 db.prodCate = require("../models/tbl_products_categories")(sequelize, DataTypes);
 db.Tags = require("../models/tbl_products_tag")(sequelize, DataTypes);
 db.Brand = require("../models/tbl_brands")(sequelize, DataTypes)
 db.AttachRec = require("../models/tbl_attachment_records")(sequelize, DataTypes)
-// db.sequelize.sync({ force: false }).then(() => {
-//   console.log('yes re-sync done!');
-// });
+
+db.Brand.hasMany(db.AttachRec);
+db.AttachRec.belongsTo(db.Brand);
+
+// db.sequelize.sync({ force: false }).then(() => { console.log('yes re-sync done!') });
 module.exports = db;

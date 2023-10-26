@@ -225,9 +225,8 @@ const filterCategoryByStatus = async (req, res) => {
     }
 };
 module.exports = {
-    filterCategoryByName, filterCategoryByStatus, add_Update_Prodcate,
-    deleteProdCateById, getallProdCate, getSingleProdCateById,
-    updateStatusSingleById, deleteMultipleCateById, updateMultipleActiveById
+    filterCategoryByName, filterCategoryByStatus, add_Update_Prodcate, deleteProdCateById, getallProdCate, 
+    getSingleProdCateById,updateStatusSingleById, deleteMultipleCateById, updateMultipleActiveById
 };
 
 

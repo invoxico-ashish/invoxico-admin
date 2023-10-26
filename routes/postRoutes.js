@@ -16,6 +16,8 @@ postRouter.post("/find/tag/name", prodTags.filterTagByName)
 postRouter.post("/login/user", adminController.loginAdmin);
 postRouter.post("/prod/tag", prodTags.addTag);
 postRouter.post("/brand", upload.single("brand_img"),brand.addBrand)
+postRouter.post("/filter/brand",brand.filterBrandByName)
+postRouter.post("/filter/brand/status",brand.filterBrandByStatus)
 
 
 

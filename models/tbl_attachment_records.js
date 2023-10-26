@@ -30,5 +30,12 @@ module.exports = (sequelize, DataTypes) => {
     createdAt: "record_added_at",
     updatedAt: "record_updated_at"
   });
+  attachmentRecord.associate = (models) => {
+    // Define a one-to-one association with Brand
+    attachmentRecord.belongsTo(models.tbl_brands, {
+      foreignKey: 'afile_record_id',
+      as: 'brand', // Alias for the association
+    });
+  };
   return attachmentRecord
 }
