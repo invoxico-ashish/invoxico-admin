@@ -42,7 +42,9 @@ db.Sequelize = Sequelize;
 db.admin = require("../models/tbl_admin")(sequelize, DataTypes);
 db.prodCate = require("../models/tbl_products_categories")(sequelize, DataTypes);
 db.Tags = require("../models/tbl_products_tag")(sequelize, DataTypes);
-db.sequelize.sync({ force: false }).then(() => {
-  console.log('yes re-sync done!');
-}); 
+db.Brand = require("../models/tbl_brands")(sequelize, DataTypes)
+db.AttachRec = require("../models/tbl_attachment_records")(sequelize, DataTypes)
+// db.sequelize.sync({ force: false }).then(() => {
+//   console.log('yes re-sync done!');
+// });
 module.exports = db;

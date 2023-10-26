@@ -158,14 +158,9 @@ const updateMultipleActiveById = async (req, res) => {
 };
 const filterCategoryByName = async (req, res) => {
     const inputName = req.body.prodCatName;
-    console.log(inputName);
-    return
     if (inputName) {
         try {
             const findName = inputName.split(' ');
-            console.log(findName);
-            console.log("findName");
-
             const matchingNames = await ProdCate.findAll({
                 attributes: [
                     ["prodcat_id", "prodcatId"],
@@ -184,10 +179,14 @@ const filterCategoryByName = async (req, res) => {
                     prodcat_deleted: 0
                 }
             });
-            return res.status(200).json({ success: true, message: "SuccessFull", matchingNames })
+            if (matchingNames.length > 0) {
+                return res.status(200).json({ success: true, message: "SuccessFull", matchingNames })
+            } else {
+                return res.status(404).json({ success: false, message: "No Tag Found" })
+            }
         } catch (error) {
             console.log(error)
-            return res.status(400).json({ success: false, message: "Something Went wrong", error })
+            return res.status(400).json({ success: false, message: "Something Went Wrong", error })
         }
     }
     else {
@@ -214,7 +213,7 @@ const filterCategoryByStatus = async (req, res) => {
                         {
                             prodcat_deleted: 0
                         }
-                    ]
+                    ],
                 }
             });
             return res.status(200).json({ success: true, message: "successfull", findCate })
@@ -225,7 +224,6 @@ const filterCategoryByStatus = async (req, res) => {
         return res.status(400).json({ success: false, message: "No record found" })
     }
 };
-
 module.exports = {
     filterCategoryByName, filterCategoryByStatus, add_Update_Prodcate,
     deleteProdCateById, getallProdCate, getSingleProdCateById,

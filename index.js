@@ -3,6 +3,7 @@ const cors = require("cors");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
+const path = require('path');
 require('dotenv').config();
 
 const secrteKey = process.env.SECRTE_KEY;
@@ -26,6 +27,7 @@ app.use(
         }, // set the session cookie properties
     })
 );
+app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use("/api", require("./routes/postRoutes"));
 app.use("/get", require("./routes/getRoutes"));
 app.use("/put", require("./routes/updateRoutes"))

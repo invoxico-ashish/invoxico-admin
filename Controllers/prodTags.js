@@ -1,5 +1,4 @@
 const db = require("../models");
-const { sequelize, DataTypes } = require("sequelize");
 const { Op } = require("sequelize");
 const Tag = db.Tags;
 
@@ -201,74 +200,6 @@ const filterTagByName = async (req, res) => {
     else {
         return res.status(400).json({ success: false, message: "name is required" })
     }
-    // Split the input name into words
-
-
-};
-const filterCategoryByName = async (req, res) => {
-    const inputName = req.query.prodCatName;
-    console.log(inputName);
-    if (inputName) {
-        try {
-            const findName = inputName.split(' ');
-            console.log(findName);
-            const matchingNames = await ProdCate.findAll({
-                attributes: [
-                    ["prodcat_id", "prodcatId"],
-                    ["prodcat_name", "prodCatName"],
-                    ["prodcat_active", "prodCatStatus"],
-                    ["prodcat_added_at", "RegDate"]
-                ],
-                where: {
-                    prodcat_name: {
-                        [Op.or]: findName.map((name) => (
-                            {
-                                [Op.like]: `%${name}%`,
-                            }
-                        ))
-                    },
-                    prodcat_deleted: 0
-                }
-            });
-            return res.status(200).json({ success: true, message: "SuccessFull", matchingNames })
-        } catch (error) {
-            return res.status(400).json({ success: false, message: "Something Went wrong", error })
-        }
-    }
-    else {
-        return res.status(400).json({ success: false, message: "name is required" })
-    }
-
-};
-const filterCategoryByStatus = async (req, res) => {
-    const prodCatStatus = req.body.prodCatStatus;
-    if (prodCatStatus || prodCatStatus === 0) {
-        try {
-            const findCate = await ProdCate.findAll({
-                attributes: [
-                    ["prodcat_id", "prodcatId"],
-                    ["prodcat_name", "prodCatName"],
-                    ["prodcat_active", "prodCatStatus"],
-                    ["prodcat_added_at", "RegDate"]
-                ],
-                where: {
-                    [Op.and]: [
-                        {
-                            prodcat_active: prodCatStatus
-                        },
-                        {
-                            prodcat_deleted: 0
-                        }
-                    ]
-                }
-            });
-            return res.status(200).json({ success: true, message: "successfull", findCate })
-        } catch (error) {
-            return res.status(400).json({ success: false, message: "Something went wrong", error })
-        }
-    } else {
-        return res.status(400).json({ success: false, message: "No record found" })
-    }
 };
 const filterTagByStatus = async (req, res) => {
     const prodtag_status = req.body.prodtag_status;
@@ -298,8 +229,6 @@ const filterTagByStatus = async (req, res) => {
 }
 
 module.exports = {
-    filterTagByStatus, filterCategoryByName, filterCategoryByStatus,
-    addTag, getAllTags, getSingleTag,
-    changeStatus, deleteSingleTag, changeStatusMultiple,
-    deleteMultipleTags, filterTagByName
+    filterTagByStatus, addTag, getAllTags, getSingleTag, changeStatus,
+    deleteSingleTag, changeStatusMultiple, deleteMultipleTags, filterTagByName
 };
