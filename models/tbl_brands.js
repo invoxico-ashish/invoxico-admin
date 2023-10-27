@@ -32,14 +32,15 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {
     createdAt: "brand_added_at",
-    updatedAt: "brand_updated_at"
+    updatedAt: "brand_updated_at",
+    indexes: [
+      {
+        name: "composite_index",
+        fields: ["brand_id", "brand_status", "brand_deleted"],
+        unique: true
+      }
+    ]
   });
-  Brand.associate = (models) => {
-    // Define a one-to-one association with AttachRec
-    Brand.belongsTo(models.tbl_attachment_records, {
-      foreignKey: 'afile_record_id',
-      as: 'attachmentRecord', // Alias for the association
-    });
-  };
+
   return Brand;
 }

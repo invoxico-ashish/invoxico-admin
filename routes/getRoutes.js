@@ -1,8 +1,8 @@
 const router = require("express").Router();
-const admin = require("../Controllers/admin")
-const prodCateController = require("../Controllers/prodCategory");
-const prodTags = require("../Controllers/prodTags");
-const brand = require("../Controllers/brands");
+const admin = require("../Controllers/admin.controller")
+const prodCateController = require("../Controllers/prodCategory.controller");
+const prodTags = require("../Controllers/prodTags.controller");
+const brand = require("../Controllers/brands.controller");
 
 
 router.get("/prod/cat/:id", prodCateController.getSingleProdCateById);

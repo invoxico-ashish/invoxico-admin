@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       prodtag_active: {
           type: DataTypes.INTEGER(1),
           allowNull: false,
-          // defaultValue:
+          defaultValue:1
       },
       prodtag_delete: {
           type: DataTypes.INTEGER(1),

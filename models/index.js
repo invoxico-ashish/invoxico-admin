@@ -46,10 +46,16 @@ db.admin = require("../models/tbl_admin")(sequelize, DataTypes);
 db.prodCate = require("../models/tbl_products_categories")(sequelize, DataTypes);
 db.Tags = require("../models/tbl_products_tag")(sequelize, DataTypes);
 db.Brand = require("../models/tbl_brands")(sequelize, DataTypes)
-db.AttachRec = require("../models/tbl_attachment_records")(sequelize, DataTypes)
+db.AttachRec = require("./tbl_attachments")(sequelize, DataTypes)
+db.Products = require("../models/tbl_products")(sequelize, DataTypes);
+db.ProdToTag = require("../models/tbl_prodcut_to_tags")(sequelize, DataTypes);
+db.prodToCate = require("./tbl_product_to_categories")(sequelize, DataTypes)
 
-db.Brand.hasMany(db.AttachRec);
-db.AttachRec.belongsTo(db.Brand);
+
+db.Brand.hasMany(db.AttachRec, { foreignKey: "afile_record_id", as: "otherInfo" });
+db.AttachRec.belongsTo(db.Brand, { foreignKey: "afile_record_id", as: "otherInfo" });
 
 // db.sequelize.sync({ force: false }).then(() => { console.log('yes re-sync done!') });
+
+
 module.exports = db;
