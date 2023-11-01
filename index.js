@@ -33,7 +33,4 @@ app.use("/get", require("./routes/getRoutes"));
 app.use("/put", require("./routes/updateRoutes"))
 app.use("/del", require("./routes/deleteRoutes"));
 
-
-app.listen(port, () => {
-    console.log(`Server in running on port ${port}`)
-})
+app.listen(port, () => { console.log(`Server in running on port ${port}`) });

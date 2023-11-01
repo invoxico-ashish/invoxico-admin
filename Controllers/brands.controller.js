@@ -8,8 +8,12 @@ const mod_key = process.env.ATTACHMENT_RECORD_MODULE_ID_BRANDS;
 
 const addBrand = async (req, res) => {
     const { brand_name, brand_featured, brand_status, brand_id } = req.body
-    const name = brand_name.toLowerCase()
-    let slug = slugify(name, { strict: false });
+    let slug = slugify(brand_name, {
+        strict: false,
+        lower: true,
+    });
+    // console.log(slug)
+    // return
     if (brand_name) {
         try {
             if (brand_id) {
@@ -230,6 +234,11 @@ const filterBrandByName = async (req, res) => {
         // return
         try {
             const response = await Brand.findAll({
+                include: [{
+                    model: Attchament,
+                    attributes: ["afile_id", "afile_type", ["afile_record_id", "brand_id"], "afile_physical_path", "afile_name"],
+                    as: 'otherInfo'
+                }],
                 where: {
                     [Op.and]: [
                         {
@@ -241,7 +250,6 @@ const filterBrandByName = async (req, res) => {
                             brand_deleted: 0
                         }
                     ]
-
                 }, attributes: ["brand_id", "brand_name", "brand_featured", "brand_status", "brand_deleted", "brand_added_at"]
             })
             if (response && response.length > 0) {
@@ -261,6 +269,11 @@ const filterBrandByStatus = async (req, res) => {
     if (inputStatus || inputStatus === 0) {
         try {
             const findBrand = await Brand.findAll({
+                include: [{
+                    model: Attchament,
+                    attributes: ["afile_id", "afile_type", ["afile_record_id", "brand_id"], "afile_physical_path", "afile_name"],
+                    as: 'otherInfo'
+                }],
                 attributes: ["brand_id", "brand_name", "brand_featured", "brand_status", "brand_added_at"],
                 where: {
                     [Op.and]: [

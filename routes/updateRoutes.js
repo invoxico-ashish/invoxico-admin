@@ -3,7 +3,8 @@ const putRouter = express.Router();
 const admin = require("../Controllers/admin.controller")
 const prodCateController = require("../Controllers/prodCategory.controller");
 const prodTags = require("../Controllers/prodTags.controller");
-const brand = require("../Controllers/brands.controller")
+const brand = require("../Controllers/brands.controller");
+const products = require("../Controllers/products.controller");
 
 
 putRouter.post("/multiple/prod/cate/active", prodCateController.updateMultipleActiveById);
@@ -12,6 +13,9 @@ putRouter.post("/multiple/prod/tag/status", prodTags.changeStatusMultiple);
 putRouter.put("/prod/tag/single/status/:id", prodTags.changeStatus);
 putRouter.put("/brand/single/status/:id", brand.changeBrandStatus);
 putRouter.put("/brand/multiple/status", brand.changeBrandStatusMultiple);
+putRouter.put("/product/status/:id", products.changestatusSingleProduct);
+putRouter.put("/product/status/multiple/status", products.changeProductsStatusMultiple);
+
 
 
 module.exports = putRouter;

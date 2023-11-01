@@ -44,16 +44,23 @@ db.Sequelize = Sequelize;
 
 db.admin = require("../models/tbl_admin")(sequelize, DataTypes);
 db.prodCate = require("../models/tbl_products_categories")(sequelize, DataTypes);
-db.Tags = require("../models/tbl_products_tag")(sequelize, DataTypes);
-db.Brand = require("../models/tbl_brands")(sequelize, DataTypes)
-db.AttachRec = require("./tbl_attachments")(sequelize, DataTypes)
+db.Tags = require("../models/tbl_products_tag")(sequelize, DataTypes);;
+db.Brand = require("../models/tbl_brands")(sequelize, DataTypes);
+db.AttachRec = require("./tbl_attachments")(sequelize, DataTypes);
 db.Products = require("../models/tbl_products")(sequelize, DataTypes);
 db.ProdToTag = require("../models/tbl_prodcut_to_tags")(sequelize, DataTypes);
-db.prodToCate = require("./tbl_product_to_categories")(sequelize, DataTypes)
+db.prodToCate = require("./tbl_product_to_categories")(sequelize, DataTypes);
 
 
 db.Brand.hasMany(db.AttachRec, { foreignKey: "afile_record_id", as: "otherInfo" });
 db.AttachRec.belongsTo(db.Brand, { foreignKey: "afile_record_id", as: "otherInfo" });
+db.Products.hasMany(db.ProdToTag, { foreignKey: "ptc_prod_id", as: 'product_tag' });
+db.ProdToTag.belongsTo(db.Products, { foreignKey: "ptc_prod_id", as: 'product_tag' });
+db.Products.hasMany(db.prodToCate, { foreignKey: "ptc_prod_id", as: 'product_category' });
+db.prodToCate.belongsTo(db.Products, { foreignKey: "ptc_prod_id", as: 'product_category' });
+
+
+
 
 // db.sequelize.sync({ force: false }).then(() => { console.log('yes re-sync done!') });
 
