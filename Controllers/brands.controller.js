@@ -12,8 +12,6 @@ const addBrand = async (req, res) => {
         strict: false,
         lower: true,
     });
-    // console.log(slug)
-    // return
     if (brand_name) {
         try {
             if (brand_id) {

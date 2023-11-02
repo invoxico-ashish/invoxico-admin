@@ -35,7 +35,7 @@ const addTag = async (req, res) => {
             };
         } catch (error) {
             console.log(error);
-            return res.status(400).json({ success: false, message: "something went wrong",  error: error.message });
+            return res.status(400).json({ success: false, message: "something went wrong", error: error.message });
         }
     }
 };
@@ -57,7 +57,7 @@ const getAllTags = async (req, res) => {
         return res.status(200).json({ success: true, message: "successfull", allTags });
     } catch (error) {
         console.log(error)
-        return res.status(400).json({ success: false, message: "something went wrong",  error: error.message });
+        return res.status(400).json({ success: false, message: "something went wrong", error: error.message });
     };
 };
 const getSingleTag = async (req, res) => {
@@ -76,7 +76,7 @@ const getSingleTag = async (req, res) => {
         return res.status(200).json({ success: true, message: "successfull", singleTag });
     } catch (error) {
         console.log(error);
-        return res.status(400).json({ success: false, message: "Something went wrong",  error: error.message });
+        return res.status(400).json({ success: false, message: "Something went wrong", error: error.message });
     }
 };
 const changeStatus = async (req, res) => {
@@ -94,7 +94,7 @@ const changeStatus = async (req, res) => {
             return res.status(200).json({ success: true, message: "updated Successfully", updateStatus });
         } catch (error) {
             console.error(error);
-            return res.status(400).json({ success: false, message: "something wnent wrong",  error: error.message });
+            return res.status(400).json({ success: false, message: "something wnent wrong", error: error.message });
         };
     }
     else {
@@ -115,7 +115,7 @@ const deleteSingleTag = async (req, res) => {
             });
             return res.status(200).json({ success: true, message: "Tag deleted successfully" })
         } catch (error) {
-            return res.status(400).json({ success: false, message: "something went wrong",  error: error.message })
+            return res.status(400).json({ success: false, message: "something went wrong", error: error.message })
         }
     }
     return res.status(404).json({ success: false, message: "no record found or id is required" })
@@ -137,7 +137,7 @@ const changeStatusMultiple = async (req, res) => {
                 );
                 return res.status(200).json({ success: true, message: "update successfully", updateTag });
             } catch (error) {
-                return res.status(400).json({ success: false, message: "something went wrong",  error: error.message });
+                return res.status(400).json({ success: false, message: "something went wrong", error: error.message });
             }
         } else {
             return res.status(404).json({ success: false, message: "id or status is required " });
@@ -160,7 +160,7 @@ const deleteMultipleTags = async (req, res) => {
             });
             return res.status(200).json({ success: true, message: "deleted successfully", deleteMultiple })
         } catch (error) {
-            return res.status(400).json({ success: false, message: "something went wrong",  error: error.message })
+            return res.status(400).json({ success: false, message: "something went wrong", error: error.message })
         }
     }
     else {
@@ -170,7 +170,6 @@ const deleteMultipleTags = async (req, res) => {
 const filterTagByName = async (req, res) => {
     const inputname = req.query.prodtag_name;
     if (inputname) {
-        const findName = inputname.split(' ');
         try {
             const matchingNames = await Tag.findAll({
                 where: {
@@ -187,13 +186,32 @@ const filterTagByName = async (req, res) => {
 
                 }
             });
-            return res.status(200).json({ success: true, message: "SuccessFull", matchingNames });
+            if (matchingNames.length > 0) {
+                return res.status(200).json({ success: true, message: "SuccessFull", matchingNames });
+            }
+            else {
+                return res.status(200).json({ success: false, message: "no record found" })
+            }
         } catch (error) {
             console.log(error);
             return res.status(400).json({ success: false, message: "something went wrong", error: error.message })
         };
     }
     else {
+        const allTags = await Tag.findAll({
+            attributes: [
+                ["prodtag_id", "prodtag_id"],
+                ["prodtag_name", "prodtag_name"],
+                ["prodtag_active", "prodtag_status"],
+                ["prodctag_added_at", "RegDate"],
+            ], where: {
+                prodtag_delete: 0
+            },
+            order: [
+                ['prodtag_id', 'DESC'] // Order by 'RegDate' in descending order
+            ]
+        });
+        return res.status(200).json({ success: true, message: "SuccessFull", allTags });
         return res.status(400).json({ success: false, message: "name is required" })
     }
 };
@@ -226,9 +244,31 @@ const filterTagByStatus = async (req, res) => {
     else {
         console.log("err")
     }
+};
+const paginateTag = async (req, res) => {
+    let { limit, page } = req.body
+    console.log(req.body);
+    const tagPage = page || 1;
+    const tagLimit = limit || 10
+    const offset = (tagPage - 1) * tagLimit;
+    try {
+        const products = await Tag.findAll(
+            {
+                limit: tagLimit,
+                offset: offset,
+                where: {
+                    prodtag_delete: 0
+                }
+            },
+        )
+        return res.status(200).json({ success: true, message: "Success", products })
+    } catch (error) {
+        return res.status(400).json({ success: false, message: "Something went wrong", error: error.message })
+    }
+
 }
 
 module.exports = {
-    filterTagByStatus, addTag, getAllTags, getSingleTag, changeStatus,
-    deleteSingleTag, changeStatusMultiple, deleteMultipleTags, filterTagByName
+    filterTagByStatus, addTag, getAllTags, getSingleTag, changeStatus, deleteSingleTag,
+    changeStatusMultiple, deleteMultipleTags, filterTagByName, paginateTag
 };

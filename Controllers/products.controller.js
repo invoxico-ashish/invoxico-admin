@@ -6,8 +6,6 @@ const prodToCate = db.prodToCate;
 const attachments = db.AttachRec
 const mod_key = process.env.ATTACHMENT_RECORD_MODULE_ID_PRODUCTS;
 
-
-
 const addProduct = async (req, res) => {
     const product_img = req.files
     const {
@@ -17,7 +15,8 @@ const addProduct = async (req, res) => {
         product_status, product_description, product_short_description,
         product_category, product_tag, product_id
     } = req.body
-    console.log(req.body);
+    const productTag = JSON.parse(product_tag);
+    const productCat = JSON.parse(product_category);
     const dataToInsert =
     {
         product_name: product_name, product_SKU_no: product_SKU_no,
@@ -28,101 +27,143 @@ const addProduct = async (req, res) => {
         product_status: product_status, product_description: product_description,
         product_short_description: product_short_description,
     };
-    if (product_id) {
-        console.log(product_id)
-        if (dataToInsert) {
-            try {
-                const updateProduct = await Products.update(dataToInsert, {
-                    where: {
-                        product_id: product_id
-                    }
-                });
-                if (updateProduct.length > 0) {
-                    const prodToCateupdate = { ptc_cate_id: product_category }
-                    const prodToTag = { ptc_tag_id: product_tag }
-                    const addToCate = await prodToCate.update(prodToCateupdate, {
+    const undefinedFields = Object.keys(dataToInsert).filter((key) => dataToInsert[key] === undefined);
+    if (undefinedFields.length > 0) {
+        return res.status(400).json({ success: false, message: 'Some fields are undefined', undefinedFields: undefinedFields });
+    }
+    else {
+        if (product_id) {
+            if (dataToInsert) {
+                try {
+                    const updateProduct = await Products.update(dataToInsert, {
                         where: {
-                            ptc_prod_id: product_id
+                            product_id: product_id
                         }
                     });
-                    if (addToCate.length > 0) {
-                        const addTotag = await ProdToTag.update(prodToTag, {
-                            where: {
-                                ptc_prod_id: product_id
-                            }
-                        })
-                        console.log(addTotag)
-                        if (addTotag.length > 0) {
-                            if (product_img.length > 0) {
-                                try {
-                                    const deleteAttachments = await attachments.destroy({
-                                        where: {
-                                            [Op.and]: [
-                                                {
-                                                    afile_record_id: product_id
-                                                },
-                                                {
-                                                    afile_type: mod_key
-                                                }
-                                            ]
-                                        }
-                                    })
-                                    const dataToAttachment = product_img.map((image) => ({
-                                        afile_type: mod_key,
-                                        afile_record_id: product_id,
-                                        afile_physical_path: image.filename,
-                                        afile_name: image.originalname,
-                                    }));
-                                    const addToAttachment = await attachments.bulkCreate(dataToAttachment);
-                                    return res.status(200).json({ success: true, message: "product update successfully", updateProduct })
-                                } catch (error) {
-                                    console.log(error)
-                                    return res.status(400).json({ success: false, message: "something went wrong", error: error.message })
+                    if (updateProduct.length > 0) {
+                        if (productCat && productCat.length > 0) {
+                            const catAssociations = productCat.map((catId) => ({
+                                ptc_prod_id: product_id,
+                                ptc_cate_id: catId,
+                            }));
+                            const delOldCate = await prodToCate.destroy({
+                                where: {
+
+                                    ptc_prod_id: product_id
                                 }
-                            } else {
-                                return res.status(200).json({ success: true, message: "product update successfully", updateProduct })
+                            });
+                            try {
+                                const addToCate = await prodToCate.bulkCreate(catAssociations);
+                                if (addToCate.length > 0) {
+                                    if (productTag && productTag.length > 0) {
+                                        const tagAssociations = productTag.map((tagId) => ({
+                                            ptc_prod_id: product_id,
+                                            ptc_tag_id: tagId,
+                                        }));
+                                        const delOldtag = await ProdToTag.destroy({
+                                            where: {
+                                                ptc_prod_id: product_id
+                                            }
+                                        })
+                                        const addToTag = await ProdToTag.bulkCreate(tagAssociations);
+                                        console.log(addToTag.length);
+                                        if (addToTag.length > 0) {
+                                            if (product_img.length > 0) {
+                                                try {
+                                                    const deleteAttachments = await attachments.destroy({
+                                                        where: {
+                                                            [Op.and]: [
+                                                                {
+                                                                    afile_record_id: product_id
+                                                                },
+                                                                {
+                                                                    afile_type: mod_key
+                                                                }
+                                                            ]
+                                                        }
+                                                    })
+                                                    const dataToAttachment = product_img.map((image) => ({
+                                                        afile_type: mod_key,
+                                                        afile_record_id: product_id,
+                                                        afile_physical_path: image.filename,
+                                                        afile_name: image.originalname,
+                                                    }));
+                                                    const addToAttachment = await attachments.bulkCreate(dataToAttachment);
+                                                    return res.status(200).json({ success: true, message: "product update successfully", updateProduct })
+                                                } catch (error) {
+                                                    console.log(error)
+                                                    return res.status(400).json({ success: false, message: "something went wrong", error: error.message })
+                                                }
+                                            } else {
+                                                return res.status(200).json({ success: true, message: "product update successfully", updateProduct })
+                                            }
+                                        }
+                                        else {
+                                            return res.status(400).json({ success: false, message: "something went wrong" })
+                                        }
+                                    }
+                                }
+                            } catch (error) {
+                                console.log(error)
                             }
-                        }
-                        else {
-                            return res.status(400).json({ success: false, message: "something went wrong" })
                         }
                     }
+                } catch (error) {
+                    console.log(error)
+                    return res.status(400).json({ success: false, message: "Something went wrong", error: error.message })
                 }
-            } catch (error) {
-                console.log(error)
-                return res.status(400).json({ success: false, message: "Something went wrong", error: error.message })
+            } else {
+                return res.status(400).json({ success: false, messsage: "Data is required" })
             }
-        } else {
-            return res.status(400).json({ success: false, messsage: "Data is required" })
         }
-    } else {
-        if (dataToInsert) {
-            try {
-                const addProduct = await Products.create(dataToInsert);
-                const prod_id = addProduct.product_id;
-                const dataToCate = { ptc_prod_id: prod_id, ptc_cate_id: product_category }
-                const dataTotag = { ptc_prod_id: prod_id, ptc_tag_id: product_tag }
-                const addToCate = await prodToCate.create(dataToCate);
-                const addToTag = await ProdToTag.create(dataTotag);
-                if (product_img) {
-                    const dataToAttachment = product_img.map((image) => ({
-                        afile_type: mod_key,
-                        afile_record_id: prod_id,
-                        afile_physical_path: image.filename,
-                        afile_name: image.originalname,
-                    }));
-                    const addToAttachment = await attachments.bulkCreate(dataToAttachment);
+        else {
+            if (dataToInsert) {
+                try {
+                    const addProduct = await Products.create(dataToInsert);
+                    const prod_id = addProduct.product_id;
+                    if (productTag && productTag.length > 0) {
+                        const tagAssociations = productTag.map((tagId) => ({
+                            ptc_prod_id: prod_id,
+                            ptc_tag_id: tagId,
+                        }));
+                        try {
+                            const addToTag = await ProdToTag.bulkCreate(tagAssociations);
+                            if (productCat && productCat.length > 0) {
+                                const catAssociations = productCat.map((catId) => ({
+                                    ptc_prod_id: prod_id,
+                                    ptc_cate_id: catId,
+                                }));
+                                console.log(catAssociations, "catAssociations");
+                                try {
+                                    const addToCate = await prodToCate.bulkCreate(catAssociations);
+                                    if (product_img) {
+                                        const dataToAttachment = product_img.map((image) => ({
+                                            afile_type: mod_key,
+                                            afile_record_id: prod_id,
+                                            afile_physical_path: image.filename,
+                                            afile_name: image.originalname,
+                                        }));
+                                        const addToAttachment = await attachments.bulkCreate(dataToAttachment);
+                                        return res.status(201).json({ success: true, messsage: "product add successfully", addProduct, addToTag, addToCate })
+                                    }
+                                } catch (error) {
+                                    return res.status(400).json({ success: false, message: "Something went wrong in catId", error: error.message })
+                                }
+                            }
+                        } catch (error) {
+                            return res.status(400).json({ success: false, message: "Something went wrong in tagId", error: error.message })
+                        }
+                    }
+                } catch (error) {
+                    console.log(error)
+                    return res.status(400).json({ success: false, messsage: "Something went Wrong", error: error.message })
                 }
-                return res.status(201).json({ success: true, messsage: "product add successfully", addProduct, addToTag, addToCate })
-            } catch (error) {
-                console.log(error)
-                return res.status(400).json({ success: false, messsage: "Something went Wrong", error: error.message })
-            }
-        } else
-            return res.status(400).json({ success: false, messsage: "data is requried" })
+            } else
+                return res.status(400).json({ success: false, messsage: "data is requried" })
+        }
     }
 }
-const allProducts = async (req, res) => {
+const search = async (req, res) => {
     try {
         const products = await Products.findAll({
             include: [
@@ -133,7 +174,6 @@ const allProducts = async (req, res) => {
                 {
                     model: prodToCate,
                     as: "product_category"
-
                 }
             ],
             where: {
@@ -186,20 +226,25 @@ const singleProduct = async (req, res) => {
     }
     return res.status(400).json({ success: false, message: "no record found / id is required" })
 }
-const deleteSingleProduct = async (req, res) => {
-    const id = req.params.id;
-    if (id) {
+const Delete = async (req, res) => {
+    const id = req.body.product_id
+    console.log(id.length)
+    if (id.length > 0) {
         try {
-            const deleteProduct = await Products.update({
-                product_delete: 1
-            },
+            const deleteProducts = await Products.update(
+                {
+                    product_delete: 1
+                },
                 {
                     where: {
-                        product_id: id
+                        product_id: {
+                            [Op.in]: id
+                        }
                     }
-                });
-            if (deleteProduct.length > 0) {
-                return res.status(200).json({ success: true, message: "deleted successfully", deleteProduct })
+                }
+            )
+            if (deleteProducts.length > 0) {
+                return res.status(200).json({ success: true, message: "deleted successfully", deleteProducts })
             }
         } catch (error) {
             console.log(error);
@@ -207,32 +252,36 @@ const deleteSingleProduct = async (req, res) => {
         }
     }
     return res.status(404).json({ success: false, message: "no record found" })
-
 }
-const changestatusSingleProduct = async (req, res) => {
-    const id = req.params.id;
-    console.log(id)
+const Status = async (req, res) => {
+    const id = req.body.product_id;
     const product_status = req.body.product_status
-    if (id && (product_status || product_status === 0)) {
-        try {
-            const changeStatus = await Products.update(
-                {
-                    product_status: product_status
-                },
-                {
-                    where: {
-                        product_id: id
+    if (id.length > 0) {
+        if (product_status === 1 || product_status === 0) {
+            try {
+                const changeStatus = await Products.update(
+                    {
+                        product_status: product_status
+                    },
+                    {
+                        where: {
+                            product_id: {
+                                [Op.in]: id
+                            }
+                        }
                     }
-                })
-            return res.status(200).json({ success: true, message: "status change successfully", changeStatus });
-        } catch (error) {
-            return res.status(400).json({ success: false, message: "Something went wrong", error: error.message });
+                );
+                if (changeStatus.length > 0) {
+                    return res.status(200).json({ success: true, message: "status change successfully", changeStatus });
+                }
+                return res.status(400).json({ success: false, message: "No data update", changeStatus })
+            } catch (error) {
+                console.log(error);
+                return res.status(400).json({ success: false, message: "Something went wrong", error: error.message });
+            }
         }
-
     }
-    else {
-        return res.status(400).json({ success: false, message: "no record found/ id is required" });
-    }
+    return res.status(400).json({ success: false, message: "no record found/ id is required" });
 }
 const filterByName = async (req, res) => {
     const inputname = req.body.product_name;
@@ -303,60 +352,9 @@ const filterProductByStatus = async (req, res) => {
     }
     return res.status(400).json({ success: false, message: "status is required" })
 }
-const deleteMultipleStatus = async (req, res) => {
-    const ids = req.body.product_id;
-    console.log(ids.length);
-    if (ids.length > 0) {
-        try {
-            const product = await Products.update(
-                {
-                    product_delete: 1,
-                },
-                {
-                    where: {
-                        product_id: ids,
-                    },
-                },
-            );
-            return res.status(200).json({ success: true, message: "successfully deleted", product });
-        } catch (error) {
-            return res.status(400).json({ success: false, message: "something went wrong", error: error.message });
-        }
-    }
-    else {
-        return res.status(400).json({ success: false, message: "id is required" });
-    }
-}
-const changeProductsStatusMultiple = async (req, res) => {
-    const ids = req.body.product_id;
-    const product_status = req.body.product_status
-    console.log(ids, product_status)
-    // return false  
-    if (ids.length > 0 && (product_status || product_status === 0)) {
-        try {
-            const products = await Products.update(
-                {
-                    product_status: product_status,
-                },
-                {
-                    where: {
-                        product_id: ids
-                    }
-                }
-            );
-            if (products.length > 0) {
-                return res.status(200).json({ success: true, message: "successfully updated status", products })
-            }
-            return res.status(400).json({ success: false, message: "no operation perfomed" })
-        } catch (error) {
-            console.log(error, "error")
-        }
-
-    }
-    return res.status(400).json({ success: false, message: "id is requried" })
-}
 module.exports =
 {
-    addProduct, deleteSingleProduct, changestatusSingleProduct, deleteMultipleStatus,
-    allProducts, singleProduct, filterByName, filterProductByStatus, changeProductsStatusMultiple
+    addProduct, Delete, Status,
+    search, singleProduct, filterByName, filterProductByStatus,
 }
+

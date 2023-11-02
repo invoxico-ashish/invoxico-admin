@@ -10,11 +10,11 @@ const products = require("../Controllers/products.controller");
 
 deleteRouter.post("/delete/multiple/prod/cat", prodCateController.deleteMultipleCateById);
 deleteRouter.put("/single/prod/cat/:id", prodCateController.deleteProdCateById);
+deleteRouter.put("/delete/brand/multiple", brand.delteMultipleBrands);
 deleteRouter.put("/delete/tag/multiple", prodTags.deleteMultipleTags)
 deleteRouter.put("/single/prod/tag/:id", prodTags.deleteSingleTag)
+deleteRouter.put("/delete/product", products.Delete);
 deleteRouter.put("/single/brand/:id", brand.deleteBrand)
-deleteRouter.put("/delete/brand/multiple", brand.delteMultipleBrands);
-deleteRouter.put("/delete/product/:id", products.deleteSingleProduct);
-deleteRouter.put("/delete/multiple/product", products.deleteMultipleStatus);
+// deleteRouter.put("/delete/multiple/product", products.deleteMultipleStatus);
 
 module.exports = deleteRouter;
