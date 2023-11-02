@@ -1,9 +1,11 @@
 const db = require("../models");
 const { Op } = require("sequelize");
-const slugify = require("slugify")
+const slugify = require("slugify");
 const Brand = db.Brand;
 const Attchament = db.AttachRec
-const mod_key = process.env.ATTACHMENT_RECORD_MODULE_ID_BRANDS;
+const Module_id = require("../config/moduleConfig");
+
+const mod_key = Module_id.ATTACHMENT_RECORD_MODULE_ID_BRANDS;
 
 
 const addBrand = async (req, res) => {
@@ -69,6 +71,159 @@ const addBrand = async (req, res) => {
         return res.status(400).json({ success: false, message: "brand name is required" })
     }
 };
+const Brands = async (req, res) => {
+    const { page, limit, brand_status, brand_name } = req.body
+    if (brand_status || (brand_status === 1 || brand_status === 0) || brand_name) {
+        if (brand_status === 1 || brand_status === 0) {
+            try {
+                const findBrand = await Brand.findAll({
+                    include: [{
+                        model: Attchament,
+                        attributes: ["afile_id", "afile_type", ["afile_record_id", "brand_id"], "afile_physical_path", "afile_name"],
+                        as: 'otherInfo'
+                    }],
+                    attributes: ["brand_id", "brand_name", "brand_featured", "brand_status", "brand_added_at"],
+                    where: {
+                        [Op.and]: [
+                            {
+                                brand_status: brand_status
+                            },
+                            {
+                                brand_deleted: 0
+                            },
+                        ],
+                    },
+                },);
+                if (findBrand.length > 0) {
+                    return res.status(200).json({ success: true, message: "successfull", count: findBrand.length, findBrand })
+                }
+                return res.status(400).json({ success: false, message: "NO record found", count: findBrand.length, findBrand })
+            } catch (error) {
+                return res.status(400).json({ success: false, message: "Success", error: error.message })
+            }
+        }
+        else {
+            try {
+                const response = await Brand.findAll({
+                    include: [{
+                        model: Attchament,
+                        attributes: ["afile_id", "afile_type", ["afile_record_id", "brand_id"], "afile_physical_path", "afile_name"],
+                        as: 'otherInfo'
+                    }],
+                    where: {
+                        [Op.and]: [
+                            {
+                                brand_name: {
+                                    [Op.like]: `%${brand_name}%`
+                                }
+                            },
+                            {
+                                brand_deleted: 0
+                            }
+                        ]
+                    }, attributes: ["brand_id", "brand_name", "brand_featured", "brand_status", "brand_deleted", "brand_added_at"]
+                });
+                if (response.length > 0) {
+                    return res.status(200).json({ success: true, message: "Success", count: response.length, response })
+                }
+                else {
+                    return res.status(400).json({ success: false, message: "NO record found", count: response.length, response })
+                }
+            } catch (error) {
+                return res.status(400).json({ success: false, message: "Success", error: error.message })
+            }
+        }
+    }
+    else {
+        console.log("pagination")
+        const brandPage = page || 1;
+        const brandLimit = limit || 10;
+        const offset = (brandPage - 1) * brandLimit;
+        try {
+            const response = await Brand.findAll({
+                include: [
+                    {
+                        model: Attchament,
+                        attributes: ["afile_id", "afile_type", ["afile_record_id", "brand_id"], "afile_physical_path", "afile_name"],
+                        as: 'otherInfo'
+                    }
+                ],
+                limit: brandLimit,
+                offset: offset,
+                where: {
+                    brand_deleted: 0
+                }
+            });
+            if (response.length > 0) {
+                return res.status(200).json({ success: true, message: "success", count: response.length, response });
+            }
+            else {
+                return res.status(400).json({ success: false, message: "no record found", count: response.length, response })
+            }
+        } catch (error) {
+            return res.status(400).json({ success: false, message: "Something went wrong", error: error.message })
+        }
+    }
+};
+const deletBrandsing = async (req, res) => {
+    const ids = req.body.brand_id;
+    if (ids && ids.length > 0) {
+        try {
+            const deleteMulti = await Brand.update({
+                brand_deleted: 1
+            },
+                {
+                    where: {
+                        brand_id: ids
+                    }
+                })
+            if (deleteMulti.length > 0) {
+                return res.status(200).json({ success: true, message: "deleted successfully", deleteMulti })
+            } else {
+                return res.status(404).json({ success: false, message: "no record found or update" })
+            }
+        } catch (error) {
+            return res.status(400).json({ success: false, message: "something went wrong", error: error.message })
+        }
+    } else {
+        return res.status(404).json({ success: false, message: "id is required" })
+    }
+}
+const changeStatus = async (req, res) => {
+    const ids = req.body.brand_id;
+    const status = req.body.brand_status;
+    if (ids.length > 0) {
+        if (status === 1 || status === 0) {
+            try {
+                const changeStatus = await Brand.update({
+                    brand_status: status
+                },
+                    {
+                        where: {
+                            brand_id: ids
+                        }
+                    });
+                if (changeStatus.length > 0) {
+                    return res.status(200).json({ success: true, message: "successfull updated", changeStatus })
+                } else {
+                    return res.status(400).json({ success: false, message: "no action performed" })
+                }
+            } catch (error) {
+                return res.status(400).json({ success: false, message: "something went wrong", error: error.message })
+            }
+        } else {
+            return res.status(400).json({ success: false, message: "status is required" })
+        }
+    } else {
+        return res.status(404).json({ success: false, message: "id is required" })
+    }
+}
+
+
+
+
+
+
 const brands = async (req, res) => {
     try {
         const brand = await Brand.findAll({
@@ -295,5 +450,5 @@ const filterBrandByStatus = async (req, res) => {
 module.exports =
 {
     addBrand, deleteBrand, brands, brandById, changeBrandStatus, changeBrandStatusMultiple,
-    delteMultipleBrands, filterBrandByName, filterBrandByStatus,
+    delteMultipleBrands, filterBrandByName, filterBrandByStatus, Brands, deletBrandsing, changeStatus
 };

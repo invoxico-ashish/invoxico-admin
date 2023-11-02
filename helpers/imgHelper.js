@@ -1,6 +1,6 @@
 const multer = require("multer");
 
-const storage = multer.diskStorage({
+const brandStorage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, "public/Brand_img");
     },
@@ -8,7 +8,7 @@ const storage = multer.diskStorage({
         cb(null, `${file.fieldname}_${Date.now()}${file.originalname}`);
     },
 });
-const upload = multer({ storage: storage });
+const upload = multer({ storage: brandStorage });
 
 const productStorage = multer.diskStorage({
     destination: (req, file, cb) => {

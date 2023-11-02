@@ -14,7 +14,7 @@ postRouter.post("/product", Prod_upload.array("product_img"), products.addProduc
 postRouter.post("/filter/prod/cat/name", prodCateController.filterCategoryByName);
 postRouter.post("/filter/product/status", products.filterProductByStatus);
 postRouter.post("/brand", upload.single("brand_img"), brand.addBrand);
-postRouter.post("/prod/cat", prodCateController.add_Update_Prodcate);
+postRouter.post("/prod/cat", prodCateController.addUpdateProdcate);
 postRouter.post("/filter/brand/status", brand.filterBrandByStatus);
 postRouter.post("/filter/tag/status", prodTags.filterTagByStatus);
 postRouter.post("/filter/product/name", products.filterByName);
@@ -22,7 +22,10 @@ postRouter.post("/find/tag/name", prodTags.filterTagByName);
 postRouter.post("/login/user", adminController.loginAdmin);
 postRouter.post("/filter/brand", brand.filterBrandByName);
 postRouter.post("/prod/tag", prodTags.addTag);
-postRouter.post("/paginate/tag", prodTags.paginateTag)
+postRouter.post("/paginate/tag", prodTags.tags);
+postRouter.post("/paginate/prodcate", prodCateController.prodCate);
+postRouter.post("/paginate/products",products.products )
+postRouter.post("/paginate/Brand",brand.Brands )
 
 
 

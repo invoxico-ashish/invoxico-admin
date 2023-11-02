@@ -54,10 +54,16 @@ db.prodToCate = require("./tbl_product_to_categories")(sequelize, DataTypes);
 
 db.Brand.hasMany(db.AttachRec, { foreignKey: "afile_record_id", as: "otherInfo" });
 db.AttachRec.belongsTo(db.Brand, { foreignKey: "afile_record_id", as: "otherInfo" });
+
 db.Products.hasMany(db.ProdToTag, { foreignKey: "ptc_prod_id", as: 'product_tag' });
 db.ProdToTag.belongsTo(db.Products, { foreignKey: "ptc_prod_id", as: 'product_tag' });
+
 db.Products.hasMany(db.prodToCate, { foreignKey: "ptc_prod_id", as: 'product_category' });
 db.prodToCate.belongsTo(db.Products, { foreignKey: "ptc_prod_id", as: 'product_category' });
+
+db.Products.hasMany(db.AttachRec, { foreignKey: "afile_record_id", as: 'product_Images' });
+db.AttachRec.belongsTo(db.Products, { foreignKey: "afile_record_id", as: 'product_Images' });
+
 
 
 

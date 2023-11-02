@@ -3,7 +3,7 @@ const { Op } = require("sequelize");
 const ProdCate = db.prodCate;
 
 // api for both insert and update 
-const add_Update_Prodcate = async (req, res) => {
+const addUpdateProdcate = async (req, res) => {
     const { prodCatName, prodCatParent, prodCatIsFeatured, prodCatStatus, prodcatId } = req.body;
     if (!prodCatName || !prodCatParent || !prodCatIsFeatured || !prodCatStatus) {
         return res.status(400).json({ success: false, message: "Content is Required" });
@@ -30,6 +30,158 @@ const add_Update_Prodcate = async (req, res) => {
         };
     };
 };
+const deleteProdcate = async (req, res) => {
+    const ids = req.body.prodcatId;
+    console.log(ids)
+    // return
+    if (ids && ids.length > 0) {
+        try {
+            const response = await ProdCate.update(
+                {
+                    prodcat_deleted: 1
+                },
+                {
+                    where: {
+                        prodcat_id: ids
+                    }
+                });
+            if (response[0] > 0) {
+                return res.status(200).json({ success: true, message: "Records deleted successfully", updatedCount: response[0] });
+            } else {
+                return res.status(404).json({ success: false, message: "No matching records found" });
+            };
+        } catch (error) {
+            return res.status(400).json({ success: false, message: "Something Went Wrong", error: error.message });
+        };
+    }
+    else {
+        return res.status(400).json({ success: false, message: "Invalid or empty list of IDs" });
+    }
+};
+const prodCateStatus = async (req, res) => {
+    const ids = req.body.prodcatId;
+    const prodCatStatus = req.body.prodCatStatus;
+    if (ids.length > 0 && (prodCatStatus === 1 || prodCatStatus === 0)) {
+        try {
+            const response = await ProdCate.update(
+                { prodcat_active: prodCatStatus },
+                {
+                    where: {
+                        prodcat_id: ids
+                    },
+                },
+            );
+            return res.status(200).json({ success: true, message: "updated Successfully", response });
+        } catch (error) {
+            return res.status(400).json({ success: false, message: "Something Went Wrong", error: error.message });
+        };
+    }
+    else {
+        return res.status(400).json({ success: false, message: "No result found / id required" });
+    }
+}
+const prodCate = async (req, res) => {
+    const { limit, page, prodCatName, prodCatStatus } = req.body
+
+    if (prodCatName || prodCatStatus || (prodCatStatus === 1 || prodCatStatus === 0)) {
+        console.log("filter")
+        if (prodCatStatus === 1 || prodCatStatus === 0) {
+            console.log("prodCatStatus");
+            try {
+                const findCate = await ProdCate.findAll({
+                    attributes: [
+                        ["prodcat_id", "prodcatId"],
+                        ["prodcat_name", "prodCatName"],
+                        ["prodcat_active", "prodCatStatus"],
+                        ["prodcat_added_at", "RegDate"]
+                    ],
+                    where: {
+                        [Op.and]: [
+                            {
+                                prodcat_active: prodCatStatus
+                            },
+                            {
+                                prodcat_deleted: 0
+                            }
+                        ],
+                    }
+                });
+                if (findCate.length > 0) {
+                    return res.status(200).json({ success: true, message: "successfull", count: findCate.length, findCate })
+                }
+                else {
+                    return res.status(400).json({ success: false, message: "No Category found" })
+                }
+            } catch (error) {
+                return res.status(400).json({ success: false, message: "Something went wrong", error: error.message })
+            }
+        }
+        else {
+            if (prodCatName) {
+                console.log("prodCatName");
+                try {
+                    const matchingNames = await ProdCate.findAll({
+                        attributes: [
+                            ["prodcat_id", "prodcatId"],
+                            ["prodcat_name", "prodCatName"],
+                            ["prodcat_active", "prodCatStatus"],
+                            ["prodcat_added_at", "RegDate"],
+                            ["prodcat_deleted", "prodcat_deleted"],
+                        ],
+                        where: {
+                            [Op.and]: [
+                                {
+                                    prodcat_name: {
+                                        [Op.like]: `%${prodCatName}%`,
+                                    }
+                                }, {
+                                    prodcat_deleted: 0
+                                }
+                            ],
+                        }
+                    });
+                    if (matchingNames.length > 0) {
+                        return res.status(200).json({ success: true, message: "SuccessFull", count: matchingNames.length, matchingNames })
+                    } else {
+                        return res.status(404).json({ success: false, message: "No category Found" })
+                    }
+                } catch (error) {
+                    console.log(error)
+                    return res.status(400).json({ success: false, message: "Something Went Wrong", error: error.message })
+                }
+            }
+        }
+    } else {
+        console.log("page")
+        let catePage = page || 1;
+        let cateLimit = limit || 10;
+
+        const offset = (catePage - 1) * cateLimit;
+        try {
+            const categories = await ProdCate.findAll(
+                {
+                    limit: cateLimit,
+                    offset: offset,
+                    where: {
+                        prodcat_deleted: 0
+                    }
+                }
+            );
+            console.log(categories.length)
+            if (categories.length > 0)
+                return res.status(200).json({ success: true, message: "Success", count: categories.length, categories });
+            else {
+                return res.status(400).json({ success: false, message: "no category found" });
+            }
+        } catch (error) {
+            return res.status(400).json({ success: false, message: "Something went wrong", error: error.message })
+        }
+    }
+}
+
+
+
+
 const deleteProdCateById = async (req, res) => {
     const id = req.params.id;
     if (!id) return res.status(400).json({ success: false, message: "id is required" })
@@ -110,28 +262,6 @@ const updateStatusSingleById = async (req, res) => {
         return res.status(200).json({ success: true, message: "Updated SuccessFully", resposne });
     } catch (error) {
         res.status(400).json({ success: false, message: "Something Went Wrong", error: error.message });
-    };
-};
-const deleteMultipleCateById = async (req, res) => {
-    const ids = req.body.prodcatId;
-    if (!Array.isArray(ids) || ids.length === 0) {
-        return res.status(400).json({ success: false, message: "Invalid or empty list of IDs" });
-    };
-    try {
-        const response = await ProdCate.update(
-            { prodcat_deleted: 1 },
-            {
-                where: {
-                    prodcat_id: ids
-                }
-            });
-        if (response[0] > 0) {
-            return res.status(200).json({ success: true, message: "Records deleted successfully", updatedCount: response[0] });
-        } else {
-            return res.status(404).json({ success: false, message: "No matching records found" });
-        };
-    } catch (error) {
-        return res.status(400).json({ success: false, message: "Something Went Wrong", error: error.message });
     };
 };
 const updateMultipleActiveById = async (req, res) => {
@@ -224,9 +354,13 @@ const filterCategoryByStatus = async (req, res) => {
         return res.status(400).json({ success: false, message: "No record found" })
     }
 };
+
+
+
+
 module.exports = {
-    filterCategoryByName, filterCategoryByStatus, add_Update_Prodcate, deleteProdCateById, getallProdCate,
-    getSingleProdCateById, updateStatusSingleById, deleteMultipleCateById, updateMultipleActiveById
+    filterCategoryByName, filterCategoryByStatus, addUpdateProdcate, deleteProdCateById, getallProdCate,
+    getSingleProdCateById, updateStatusSingleById, deleteProdcate, updateMultipleActiveById, prodCateStatus, prodCate
 };
 
 
