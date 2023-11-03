@@ -174,9 +174,17 @@ const addProduct = async (req, res) => {
 };
 const products = async (req, res) => {
     const { limit, page, product_name, product_status } = req.body
+    const totalCount = await Products.count({
+        where: {
+            product_delete: 0
+        }
+    });
     if (product_name || product_status || (product_status === 1 || product_status === 0)) {
         console.log("filter")
         if (product_status === 1 || product_status === 0) {
+            let ProdPage = page || 1;
+            let prodLimit = limit || 10;
+            const offset = (ProdPage - 1) * prodLimit;
             try {
                 const products = await Products.findAll(
                     {
@@ -195,6 +203,8 @@ const products = async (req, res) => {
                                 attributes: ["afile_id", "afile_type", ["afile_record_id", "product_id"], "afile_physical_path", "afile_name"],
                             }
                         ],
+                        limit: prodLimit,
+                        offset: offset,
                         where: {
                             [Op.and]: [
                                 {
@@ -208,7 +218,7 @@ const products = async (req, res) => {
                     }
                 );
                 if (products.length > 0) {
-                    return res.status(200).json({ success: true, message: "success", count: products.length, products })
+                    return res.status(200).json({ success: true, message: "success", count: products.length, Total_Count: totalCount, products })
                 }
                 else {
                     return res.status(200).json({ success: true, message: "No product found", count: products.length, products })
@@ -251,7 +261,7 @@ const products = async (req, res) => {
                         }
                     });
                     if (response.length > 0) {
-                        return res.status(200).json({ success: true, message: "success", count: response.length, response })
+                        return res.status(200).json({ success: true, message: "success", count: response.length, Total_Count: totalCount, response })
                     }
                     else {
                         return res.status(200).json({ success: false, message: "no result found", count: response.length, response })
@@ -291,7 +301,7 @@ const products = async (req, res) => {
                 }
             );
             if (products.length > 0) {
-                return res.status(200).json({ success: true, message: "Success", count: products.length, products })
+                return res.status(200).json({ success: true, message: "Success", count: products.length, Total_Count: totalCount, products })
             }
             else {
                 return res.status(200).json({ success: false, message: "no product found", count: products.length, products })
@@ -301,8 +311,10 @@ const products = async (req, res) => {
         }
     }
 };
+
 const deleteProduct = async (req, res) => {
     const id = req.body.product_id;
+    // return
     if (id && id.length > 0) {
         try {
             const product = await Products.update(
@@ -362,6 +374,7 @@ const changeStatus = async (req, res) => {
     }
     return res.status(400).json({ success: false, message: "status is required" });
 };
+
 
 
 

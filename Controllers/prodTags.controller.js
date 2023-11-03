@@ -39,7 +39,6 @@ const addTag = async (req, res) => {
         }
     }
 };
-
 const tags = async (req, res) => {
     let { limit, page, prodtag_status, prodtag_name } = req.body
     if (prodtag_status || prodtag_status === 0 || prodtag_name) {
